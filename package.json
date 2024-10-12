@@ -1,0 +1,31 @@
+{
+  "name": "youtube-lecture-summarizer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx watch server",
+    "build": "vite build",
+    "build:server": "npx tsc server",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "start": "concurrently \"pnpm dev\" \"pnpm dev:server\""
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.2",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.4",
+    "openai": "^4.67.3",
+    "vue": "^3.5.12",
+    "youtube-transcript": "^1.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8",
+    "vue-tsc": "^2.1.6"
+  }
+}
