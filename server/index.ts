@@ -1,14 +1,35 @@
+import { serve } from '@hono/node-server';
+import dotenv from 'dotenv';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { serve } from '@hono/node-server';
-import { YoutubeTranscript } from 'youtube-transcript';
 import OpenAI from 'openai';
-import dotenv from 'dotenv';
+import { YoutubeTranscript } from 'youtube-transcript';
 
 dotenv.config();
 
 const app = new Hono();
 app.use('*', cors());
+
+const systemMessage = `
+You will be provided with a YouTube video transcript. Your task is to create a concise, informative summary that captures the key points, main ideas, and essential information. Follow these guidelines:
+
+- Identify the video's main topic and overall purpose.
+- Extract 3-5 key points or main ideas discussed in the video.
+- Highlight any important facts, statistics, or examples that support the main ideas.
+- Note any significant conclusions or takeaways.
+- Mention any notable guests, experts, or sources cited in the video.
+- Include timestamps for crucial moments or sections, if available.
+- Summarize in a clear, objective manner without personal opinions or bias.
+- Use bullet points or short paragraphs for easy readability.
+- Maintain the original tone and style of the video (e.g., formal, casual, educational).
+
+Adjust the summary length based on the video duration:
+- For videos < 10 minutes: 100-150 words
+- For videos 10-30 minutes: 150-300 words
+- For videos 30-60 minutes: 300-500 words
+- For videos > 60 minutes: 500-800 words
+These are guidelines, not strict rules. Adjust the length as needed to capture all essential information while maintaining conciseness. If the video content is particularly dense or complex, you may need to exceed these ranges slightly.
+`;
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -22,18 +43,18 @@ app.post('/api/summarize', async (c) => {
     const fullText = transcript.map((item) => item.text).join(' ');
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that summarizes YouTube lecture transcripts.',
+          content: systemMessage,
         },
         {
           role: 'user',
-          content: `Please provide a concise summary of the following lecture transcript:\n\n${fullText}`,
+          content: fullText,
         },
       ],
-      max_tokens: 300,
+      max_tokens: 1024,
     });
 
     const summary = response.choices[0].message.content;
