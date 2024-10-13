@@ -38,15 +38,17 @@ async function summarizeLecture() {
 
 <template>
   <div class="mx-auto max-w-3xl p-4 text-center">
-    <h1 class="mb-6 mt-8 inline-flex items-center gap-3 text-4xl font-bold">
+    <h1 class="mb-8 mt-12 inline-flex items-center gap-3 text-4xl font-semibold">
       <span class="i-logos-youtube-icon size-12" />Video Summarizer
     </h1>
 
     <div class="mb-4 flex justify-center gap-1">
+      <label for="youtubeUrl" class="sr-only">YouTube URL</label>
       <input
         v-model="youtubeUrl"
-        placeholder="Enter YouTube URL"
-        class="w-2/3 rounded-l-md border border-gray-5 bg-gray-2 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+        id="youtubeUrl"
+        placeholder="Enter a YouTube URL"
+        class="bg-gray-1/40 w-2/3 rounded-l-md border border-gray-5 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
       />
       <button
         @click="summarizeLecture"

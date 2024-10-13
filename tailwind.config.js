@@ -1,14 +1,15 @@
 import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons';
-import { gray } from '@radix-ui/colors';
 
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
-    colors: {
-      primary: getColorScale('sky'),
-      gray: getColorScale('neutral'),
+    extend: {
+      colors: {
+        primary: getColorScale('sky'),
+        gray: getColorScale('neutral'),
+      },
     },
   },
   plugins: [
