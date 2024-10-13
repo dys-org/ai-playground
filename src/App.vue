@@ -38,7 +38,7 @@ async function summarizeLecture() {
 
 <template>
   <div class="mx-auto max-w-3xl p-4 text-center">
-    <h1 class="mb-6 mt-8 inline-flex items-center gap-3 text-4xl font-bold text-white">
+    <h1 class="mb-6 mt-8 inline-flex items-center gap-3 text-4xl font-bold">
       <span class="i-logos-youtube-icon size-12" />Video Summarizer
     </h1>
 
@@ -46,12 +46,12 @@ async function summarizeLecture() {
       <input
         v-model="youtubeUrl"
         placeholder="Enter YouTube URL"
-        class="w-2/3 rounded-l-md border border-white/10 bg-white/10 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
+        class="w-2/3 rounded-l-md border border-gray-5 bg-gray-2 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
       />
       <button
         @click="summarizeLecture"
         :disabled="isLoading"
-        class="rounded-r-md bg-sky-500 px-3 py-2 font-semibold text-white transition-colors hover:bg-sky-500/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-400 disabled:pointer-events-none disabled:opacity-50"
+        class="hover:bg-primary-9/80 rounded-r-md bg-primary-9 px-3 py-2 font-semibold text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:pointer-events-none disabled:opacity-50"
       >
         Summarize
       </button>
@@ -62,7 +62,7 @@ async function summarizeLecture() {
     <div v-if="isLoading" role="status" class="flex justify-center">
       <svg
         aria-hidden="true"
-        class="size-12 animate-spin fill-sky-500 text-neutral-200 dark:text-neutral-600"
+        class="size-12 animate-spin fill-primary-9 text-gray-6"
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
