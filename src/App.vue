@@ -14,7 +14,7 @@ async function summarizeLecture() {
   summary.value = '';
 
   try {
-    const resp = await fetch('/api/summarize', {
+    const resp = await fetch('/api/summarizeYoutube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: youtubeUrl.value }),
@@ -47,12 +47,12 @@ async function summarizeLecture() {
         type="url"
         pattern="(http:|https:)?(\/\/)?(www\.)?(youtube.com|youtu.be)\/(watch|embed)?(\?v=|\/)?(\S+)?"
         required
-        class="bg-gray-1/40 w-2/3 rounded-l-md border border-gray-5 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+        class="w-2/3 rounded-l-md border border-gray-5 bg-gray-1/40 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
       />
 
       <button
         :disabled="isLoading"
-        class="hover:bg-primary-9/80 rounded-r-md bg-primary-9 px-3 py-2 font-semibold text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:pointer-events-none disabled:opacity-50"
+        class="rounded-r-md bg-primary-9 px-3 py-2 font-semibold text-white transition-colors hover:bg-primary-9/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:pointer-events-none disabled:opacity-50"
       >
         Summarize
       </button>
