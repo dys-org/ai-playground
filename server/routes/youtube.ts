@@ -48,6 +48,7 @@ const youtube = new Hono().post('/', async (c) => {
         },
       ],
       max_tokens: 1024,
+      temperature: 0.5,
     });
 
     const summary = response.choices[0].message.content;
