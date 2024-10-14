@@ -119,3 +119,9 @@ the hex values as variables didn't work with the tailwind opacity modifier for B
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  .dark {
+    color-scheme: dark;
+  }
+}

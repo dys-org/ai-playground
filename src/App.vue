@@ -1,12 +1,18 @@
 <script setup lang="ts">
+import MarkdownIt from 'markdown-it';
 import { ref } from 'vue';
 
+import { sleep } from './lib/utils';
+
 type Summary = { summary: string };
+
+const md: MarkdownIt = new MarkdownIt();
 
 const youtubeUrl = ref('');
 const summary = ref('');
 const isLoading = ref(false);
 const error = ref('');
+const isCopying = ref(false);
 
 async function summarizeLecture() {
   isLoading.value = true;
@@ -29,15 +35,28 @@ async function summarizeLecture() {
     isLoading.value = false;
   }
 }
+
+async function handleCopy(content: string) {
+  if (isCopying.value) return;
+  try {
+    await navigator.clipboard.writeText(content);
+    isCopying.value = true;
+    await sleep(1500);
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+  } finally {
+    isCopying.value = false;
+  }
+}
 </script>
 
 <template>
-  <div class="mx-auto max-w-3xl p-4 text-center">
-    <h1 class="mb-8 mt-12 inline-flex items-center gap-3 text-4xl font-semibold">
+  <div class="mx-auto max-w-3xl p-4 pb-24 text-center">
+    <h1 class="my-8 inline-flex items-center gap-3 text-4xl font-semibold">
       <span class="i-logos-youtube-icon size-12" />Video Summarizer
     </h1>
 
-    <form @submit.prevent="summarizeLecture" class="mb-4 flex justify-center gap-1">
+    <form @submit.prevent="summarizeLecture" class="mb-12 flex justify-center gap-1">
       <label for="youtubeUrl" class="sr-only">YouTube URL</label>
 
       <input
@@ -80,9 +99,36 @@ async function summarizeLecture() {
       <span class="sr-only">Summarizing...</span>
     </div>
 
-    <div v-if="summary" class="mt-8 text-left">
-      <h2 class="mb-4 text-2xl font-semibold">Summary:</h2>
-      <p class="whitespace-pre-wrap">{{ summary }}</p>
+    <div v-if="summary" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
+      <!-- <h2 class="mb-4 text-xl font-semibold">Summary:</h2> -->
+      <p class="chat-message text-lg leading-relaxed" v-html="md.render(summary)" />
+      <button
+        class="absolute right-4 top-8 -translate-y-1/2 bg-transparent p-1 text-white/60 hover:text-white"
+        title="Copy Summary"
+        @click="handleCopy(summary)"
+      >
+        <span class="sr-only">{{ isCopying ? 'Copied' : 'Copy' }}</span>
+        <span
+          v-if="isCopying"
+          class="i-lucide-copy-check size-5 text-green-400"
+          aria-hidden="true"
+        ></span>
+        <span v-else class="i-lucide-book-copy size-5" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 </template>
+
+<style>
+.chat-message ul,
+.chat-message ol {
+  list-style: revert;
+  margin: revert;
+  padding: revert;
+  @apply mb-4 pl-4;
+}
+
+.chat-message P:not(:last-child) {
+  margin-bottom: 1rem;
+}
+</style>
