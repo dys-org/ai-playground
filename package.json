@@ -5,12 +5,12 @@
   "type": "module",
   "packageManager": "pnpm@9.12.1",
   "scripts": {
-    "dev:client": "vite",
+    "dev": "vite",
     "build:client": "vite build",
-    "dev:server": "tsx watch server",
+    "server": "tsx watch server",
     "build:server": "npx tsc --project tsconfig.server.json",
     "preview": "vite preview",
-    "start": "concurrently \"pnpm dev:client\" \"pnpm dev:server\"",
+    "start": "concurrently \"pnpm dev\" \"pnpm server\"",
     "build": "pnpm build:client && pnpm build:server"
   },
   "dependencies": {
