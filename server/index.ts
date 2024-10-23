@@ -5,16 +5,23 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { csrf } from 'hono/csrf';
 
+import pdfSummarizer from './routes/pdfSummarizer.js';
 import youtube from './routes/youtube.js';
 
 const app = new Hono();
-app.use(csrf());
+
+// Apply CSRF protection to all routes except /api/summarizePdf
+app.use('*', async (c, next) => {
+  if (c.req.path !== '/api/summarizePdf') {
+    return csrf()(c, next);
+  }
+  await next();
+});
 
 // Serve static files from the 'dist' directory
 app.use('/*', serveStatic({ root: './dist/client' }));
 
-const api = new Hono();
-api.route('/summarizeYoutube', youtube);
+const api = new Hono().route('/summarizeYoutube', youtube).route('/summarizePdf', pdfSummarizer);
 
 const routes = app.route('/api', api);
 

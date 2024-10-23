@@ -2,6 +2,7 @@
 import MarkdownIt from 'markdown-it';
 import { ref } from 'vue';
 
+import CopyButton from '@/components/CopyButton.vue';
 import { sleep } from '@/lib/utils';
 
 type Summary = { summary: string };
@@ -102,19 +103,7 @@ async function handleCopy(content: string) {
     <div v-if="summary" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
       <!-- <h2 class="mb-4 text-xl font-semibold">Summary:</h2> -->
       <p class="chat-message text-lg leading-relaxed" v-html="md.render(summary)" />
-      <button
-        class="absolute right-4 top-8 -translate-y-1/2 bg-transparent p-1 text-white/60 hover:text-white"
-        title="Copy Summary"
-        @click="handleCopy(summary)"
-      >
-        <span class="sr-only">{{ isCopying ? 'Copied' : 'Copy' }}</span>
-        <span
-          v-if="isCopying"
-          class="i-lucide-copy-check size-5 text-green-400"
-          aria-hidden="true"
-        ></span>
-        <span v-else class="i-lucide-book-copy size-5" aria-hidden="true"></span>
-      </button>
+      <CopyButton :summary="summary" />
     </div>
   </div>
 </template>

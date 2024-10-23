@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+// import PdfSummarizerView from './views/PdfSummarizerView.vue';
 import YoutubeView from './views/YoutubeView.vue';
 
 const router = createRouter({
@@ -10,11 +11,11 @@ const router = createRouter({
       name: 'youtube',
       component: YoutubeView,
     },
-    // {
-    //   path: '/youtube',
-    //   name: 'youtube',
-    //   component: () => import('../views/YoutubeView.vue'),
-    // },
+    {
+      path: '/pdf-summarizer',
+      name: 'pdfSummarizer',
+      component: () => import('./views/PdfSummarizerView.vue'),
+    },
   ],
 });
 
