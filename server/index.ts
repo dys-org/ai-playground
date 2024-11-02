@@ -18,15 +18,14 @@ app.use('*', async (c, next) => {
   await next();
 });
 
-// Serve static files from the 'dist' directory
-app.use('/*', serveStatic({ root: './dist/client' }));
-
 const api = new Hono().route('/summarizeYoutube', youtube).route('/summarizePdf', pdfSummarizer);
 
 const routes = app.route('/api', api);
 
-// Catch-all route for client-side routing
-app.get('*', (c) => c.html('./dist/client/index.html'));
+// Serve static files from the 'dist' directory
+app.use('/*', serveStatic({ root: './dist/client' }));
+// Catch-all route to serve index.html for any unmatched routes
+app.use('*', serveStatic({ path: './dist/client/index.html' }));
 
 const port = 3000;
 
