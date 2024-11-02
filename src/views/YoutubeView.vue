@@ -72,7 +72,7 @@ async function handleCopy(content: string) {
 
       <button
         :disabled="isLoading"
-        class="rounded-r-md bg-primary-9 px-3 py-2 font-semibold text-white transition-colors hover:bg-primary-9/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:pointer-events-none disabled:opacity-50"
+        class="rounded-r-md bg-primary-9 px-3 py-2 font-semibold text-white transition-colors hover:bg-primary-9/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:pointer-events-none disabled:opacity-50"
       >
         Summarize
       </button>

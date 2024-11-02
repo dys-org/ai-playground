@@ -62,33 +62,38 @@ async function uploadPdf(e: Event) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-xl p-4 pb-24">
-    <h1 class="my-8 inline-flex items-center gap-3 text-4xl font-semibold">PDF Summarizer</h1>
+  <div class="mx-auto max-w-3xl p-4 pb-24 text-center">
+    <h1 class="my-8 inline-flex items-center gap-3 text-4xl font-semibold">
+      <span class="i-lucide-file size-10" />
+      PDF Summarizer
+    </h1>
     <form @submit.prevent="uploadPdf" class="mx-auto mb-8 grid gap-4">
       <label class="sr-only" for="pdfFile">PDF File</label>
       <input
         type="file"
         @change="handleFileChange"
         accept=".pdf"
-        class="mx-auto block w-full rounded-md border border-gray-5 bg-gray-1/40 p-2 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+        class="mx-auto block w-full cursor-pointer rounded-md border border-gray-5 bg-gray-1/40 p-2 file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
         id="pdfFile"
         name="pdf"
         required
       />
-      <label for="chunkText" class="flex items-center gap-2 text-sm">
-        <input type="checkbox" id="chunkText" name="chunkText" />
-        <span class="font-semibold">Chunk text</span>
-        <span class="block text-gray-11">
-          Splits text into chunks of 5000 characters for processing.
-        </span>
-      </label>
-      <button
-        type="submit"
-        class="mt-6 justify-self-start rounded bg-primary-9 px-3 py-2 font-semibold text-white"
-        :disabled="isLoading"
-      >
-        {{ isLoading ? 'Processing...' : 'Upload and Summarize' }}
-      </button>
+      <div class="item flex justify-between gap-2">
+        <label for="chunkText" class="flex items-center justify-center gap-2 text-sm">
+          <input type="checkbox" id="chunkText" name="chunkText" />
+          <span class="font-semibold">Chunk text</span>
+          <span class="block text-gray-11">
+            Splits text into chunks of 5000 characters for processing.
+          </span>
+        </label>
+        <button
+          type="submit"
+          class="justify-self-center rounded bg-primary-9 px-3 py-2 font-semibold text-white transition hover:bg-primary-9/90"
+          :disabled="isLoading"
+        >
+          {{ isLoading ? 'Processing...' : 'Upload and Summarize' }}
+        </button>
+      </div>
     </form>
 
     <p v-if="error" class="mb-4 text-red-500">{{ error }}</p>

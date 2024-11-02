@@ -12,16 +12,51 @@ const openai = new OpenAI({
 
 async function getSummary(chunk: string) {
   const resp = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
-        content: 'You are a helpful assistant. Your task is to summarize text the provided text.',
+        content: 'You are a helpful assistant. Your task is to summarize the provided text.',
       },
       { role: 'user', content: chunk },
     ],
   });
   return resp.choices[0].message.content;
+}
+
+async function extractImages(doc: mupdf.Document): Promise<string[]> {
+  const images: string[] = [];
+  for (let i = 0; i < doc.countPages(); i++) {
+    const page = doc.loadPage(i);
+    page.toStructuredText('preserve-images').walk({
+      onImageBlock(bbox, transform, image) {
+        const pixmap = image.toPixmap();
+        const pngData = pixmap.asPNG();
+        const base64Image = Buffer.from(pngData).toString('base64');
+        images.push(`data:image/png;base64,${base64Image}`);
+      },
+    });
+  }
+  return images;
+}
+
+async function interpretImage(imageBase64: string): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: 'Describe this image in detail, focusing on its content and any text visible in it.',
+          },
+          { type: 'image_url', image_url: { url: imageBase64 } },
+        ],
+      },
+    ],
+  });
+  return response.choices[0].message.content || '';
 }
 
 const pdf = new Hono().post('/', async (c) => {
@@ -42,7 +77,7 @@ const pdf = new Hono().post('/', async (c) => {
     await fs.writeFile(filePath, Buffer.from(arrayBuffer));
     // Read the file as a buffer
     const pdfBuffer = await fs.readFile(filePath);
-    // Extract text from PDF using mupdf
+    // Extract text and images from PDF using mupdf
     const doc = mupdf.Document.openDocument(pdfBuffer, 'application/pdf');
     let pdfText = '';
     for (let i = 0; i < doc.countPages(); i++) {
@@ -59,21 +94,27 @@ const pdf = new Hono().post('/', async (c) => {
       return c.json({ error: 'No text was extracted from the PDF' }, 500);
     }
 
-    // If chunkText is not checked, process the entire text with OpenAI
+    // Extract images
+    const images = await extractImages(doc);
+
+    // Interpret images
+    const imageInterpretations = await Promise.all(images.map(interpretImage));
+
+    // Combine text and image interpretations
+    const fullContent =
+      pdfText + '\n\nImage Interpretations:\n' + imageInterpretations.join('\n\n');
+
+    // If chunkText is not checked, process the entire content with OpenAI
     if (!chunkText) {
-      const summary = await getSummary(pdfText);
+      const summary = await getSummary(fullContent);
       return c.json({ summary });
     }
 
     // Split text into chunks of 5000 characters
-    const chunks = pdfText.match(/.{1,5000}/g) || [];
+    const chunks = fullContent.match(/.{1,5000}/g) || [];
 
     // Process each chunk with OpenAI
-    const summaries = await Promise.all(
-      chunks.map(async (chunk) => {
-        getSummary(chunk);
-      }),
-    );
+    const summaries = await Promise.all(chunks.map(async (chunk) => getSummary(chunk)));
 
     // Combine summaries
     const finalSummary = summaries.join('\n\n');
