@@ -1,6 +1,5 @@
 {
   "include": ["server/**/*.ts"],
-  "exclude": ["node_modules"],
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
