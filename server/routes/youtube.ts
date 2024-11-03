@@ -54,10 +54,9 @@ const youtube = new Hono().post('/', async (c) => {
     const summary = response.choices[0].message.content;
 
     return c.json({ summary });
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
-    // return c.text(err, 500);
-    return c.json({ message: 'Failed to summarize the video', error: err }, 500);
+    return c.text(err || 'Failed to summarize the video', 500);
   }
 });
 
