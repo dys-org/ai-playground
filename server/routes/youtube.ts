@@ -1,6 +1,8 @@
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import { Hono } from 'hono';
 import OpenAI from 'openai';
-import { YoutubeTranscript } from 'youtube-transcript';
+import { Innertube } from 'youtubei.js';
 
 const systemMessage = `
 You will be provided with a YouTube video transcript. Your task is to create a concise, informative summary that captures the key points, main ideas, and essential information. Follow these guidelines:
@@ -27,13 +29,48 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+dayjs.extend(duration);
+
+const formatMilliseconds = (ms: string) => {
+  return dayjs.duration(parseInt(ms)).format('HH:mm:ss');
+};
+
+// Helper function to extract video ID from YouTube URL
+function extractVideoId(url: string) {
+  if (url.includes('youtu.be/')) {
+    return url.split('youtu.be/')[1]?.split(/[?#]/)[0] || null;
+  }
+  const videoId = url.split('v=')[1]?.split(/[?#&]/)[0];
+  return videoId?.length === 11 ? videoId : null;
+}
+
 const youtube = new Hono().post('/', async (c) => {
   const { url } = await c.req.json();
 
   try {
-    const transcript = await YoutubeTranscript.fetchTranscript(url);
-    // TODO does this give time stamps?
-    const fullText = transcript.map((item) => item.text).join(' ');
+    // Extract video ID from URL
+    const videoId = extractVideoId(url);
+    if (!videoId) return c.text('Invalid YouTube URL', 400);
+
+    const yt = await Innertube.create({
+      lang: 'en',
+      location: 'US',
+      retrieve_player: false,
+    });
+    const video = await yt.getInfo(videoId ?? '');
+    const transcriptData = await video.getTranscript();
+
+    if (!transcriptData?.transcript?.content?.body?.initial_segments) {
+      return c.text('No transcript available for this video', 422);
+    }
+
+    const segments = transcriptData.transcript.content.body.initial_segments;
+
+    // text with formatted timestamps
+    const fullText = segments
+      .map((segment) => `[${formatMilliseconds(segment.start_ms)}] ${segment.snippet.text}`)
+      .join(' ');
+    // return c.json({ summary: fullText });
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
