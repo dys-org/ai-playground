@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
+import duration from 'dayjs/plugin/duration.js';
 import { Hono } from 'hono';
 import OpenAI from 'openai';
 import { Innertube } from 'youtubei.js';
