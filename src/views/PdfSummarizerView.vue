@@ -67,7 +67,7 @@ async function uploadPdf(e: Event) {
       <span class="i-lucide-file size-10" />
       PDF Summarizer
     </h1>
-    <form @submit.prevent="uploadPdf" class="mx-auto mb-8 grid gap-4">
+    <form @submit.prevent="uploadPdf" class="mx-auto mb-8 grid max-w-lg gap-4">
       <label class="sr-only" for="pdfFile">PDF File</label>
       <input
         type="file"
@@ -78,22 +78,20 @@ async function uploadPdf(e: Event) {
         name="pdf"
         required
       />
-      <div class="item flex justify-between gap-2">
-        <label for="chunkText" class="flex items-center justify-center gap-2 text-sm">
-          <input type="checkbox" id="chunkText" name="chunkText" />
-          <span class="font-semibold">Chunk text</span>
-          <span class="block text-gray-11">
-            Splits text into chunks of 5000 characters for processing.
-          </span>
-        </label>
-        <button
-          type="submit"
-          class="justify-self-center rounded bg-primary-9 px-3 py-2 font-semibold text-white transition hover:bg-primary-9/90"
-          :disabled="isLoading"
-        >
-          {{ isLoading ? 'Processing...' : 'Upload and Summarize' }}
-        </button>
-      </div>
+      <label for="chunkText" class="flex items-center justify-center gap-2 text-sm">
+        <input type="checkbox" id="chunkText" name="chunkText" />
+        <span class="font-semibold">Chunk text</span>
+        <span class="block text-gray-11">
+          Splits text into chunks of 5000 characters for processing.
+        </span>
+      </label>
+      <button
+        type="submit"
+        class="mt-4 justify-self-center rounded bg-primary-9 px-3 py-2 font-semibold text-white transition hover:bg-primary-9/90"
+        :disabled="isLoading"
+      >
+        {{ isLoading ? 'Processing...' : 'Upload and Summarize' }}
+      </button>
     </form>
 
     <p v-if="error" class="mb-4 text-red-500">{{ error }}</p>
