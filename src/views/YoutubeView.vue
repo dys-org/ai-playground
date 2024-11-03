@@ -3,7 +3,6 @@ import MarkdownIt from 'markdown-it';
 import { ref } from 'vue';
 
 import CopyButton from '@/components/CopyButton.vue';
-import { sleep } from '@/lib/utils';
 
 type Summary = { summary: string };
 
@@ -13,7 +12,6 @@ const youtubeUrl = ref('');
 const summary = ref('');
 const isLoading = ref(false);
 const error = ref('');
-const isCopying = ref(false);
 
 async function summarizeLecture() {
   isLoading.value = true;
@@ -26,27 +24,17 @@ async function summarizeLecture() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: youtubeUrl.value }),
     });
-    if (!resp.ok) throw resp;
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(text);
+    }
     const json = (await resp.json()) as Summary;
     summary.value = json.summary;
-  } catch (err) {
-    error.value = 'An error occurred while summarizing the lecture';
+  } catch (err: any) {
+    error.value = err;
     console.error(err);
   } finally {
     isLoading.value = false;
-  }
-}
-
-async function handleCopy(content: string) {
-  if (isCopying.value) return;
-  try {
-    await navigator.clipboard.writeText(content);
-    isCopying.value = true;
-    await sleep(1500);
-  } catch (err) {
-    console.error('Failed to copy: ', err);
-  } finally {
-    isCopying.value = false;
   }
 }
 </script>
@@ -101,7 +89,6 @@ async function handleCopy(content: string) {
     </div>
 
     <div v-if="summary" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
-      <!-- <h2 class="mb-4 text-xl font-semibold">Summary:</h2> -->
       <p class="chat-message text-lg leading-relaxed" v-html="md.render(summary)" />
       <CopyButton :summary="summary" />
     </div>

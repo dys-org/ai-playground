@@ -30,11 +30,7 @@ async function handleCopy(content: string) {
     @click="handleCopy(props.summary)"
   >
     <span class="sr-only">{{ isCopying ? 'Copied' : 'Copy' }}</span>
-    <span
-      v-if="isCopying"
-      class="i-lucide-copy-check size-5 text-green-400"
-      aria-hidden="true"
-    ></span>
-    <span v-else class="i-lucide-book-copy size-5" aria-hidden="true"></span>
+    <span v-if="isCopying" class="i-lucide-copy-check size-5 text-green-400" aria-hidden="true" />
+    <span v-else class="i-lucide-copy size-5" aria-hidden="true" />
   </button>
 </template>

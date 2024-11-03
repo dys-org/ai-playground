@@ -36,25 +36,14 @@ async function uploadPdf(e: Event) {
     });
 
     if (!resp.ok) {
-      if (resp.status === 403) {
-        throw new Error('Access denied. Please try refreshing the page.');
-      } else {
-        throw new Error('Failed to upload and summarize PDF. Please try again.');
-      }
+      const text = await resp.text();
+      throw new Error(text);
     }
-
     const json = await resp.json();
-    if (json.error) {
-      throw new Error(json.error);
-    }
     summary.value = json.summary;
-  } catch (err) {
-    if (err instanceof Error) {
-      error.value = err.message;
-    } else {
-      error.value = 'An unexpected error occurred. Please try again.';
-    }
-    console.error('Error:', err);
+  } catch (err: any) {
+    error.value = err;
+    console.error(err);
   } finally {
     isLoading.value = false;
   }

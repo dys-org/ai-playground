@@ -61,11 +61,11 @@ async function interpretImage(imageBase64: string): Promise<string> {
 
 const pdf = new Hono().post('/', async (c) => {
   const formData = await c.req.formData();
-  console.log(formData);
+  // console.log(formData);
   const file = formData.get('pdf') as File | null;
   const chunkText = formData.get('chunkText') || false;
   if (!file) {
-    return c.json({ error: 'No file uploaded' }, 400);
+    return c.text('No file uploaded', 400);
   }
 
   const tempDir = os.tmpdir();
@@ -91,7 +91,7 @@ const pdf = new Hono().post('/', async (c) => {
     }
     // return if no text was added to pdfText
     if (!pdfText) {
-      return c.json({ error: 'No text was extracted from the PDF' }, 500);
+      return c.text('No text was extracted from the PDF', 500);
     }
 
     // Extract images
@@ -122,9 +122,9 @@ const pdf = new Hono().post('/', async (c) => {
   } catch (err) {
     console.error('Error processing PDF:', err);
     if (err instanceof Error) {
-      return c.json({ error: `Error processing PDF: ${err.message}` }, 500);
+      return c.text(`Error processing PDF: ${err.message}`, 500);
     }
-    return c.json({ error: 'An unexpected error occurred while processing the PDF' }, 500);
+    return c.text('An unexpected error occurred while processing the PDF', 500);
   } finally {
     // Clean up the temporary file
     await fs.remove(filePath).catch((err) => {
