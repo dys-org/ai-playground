@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import { InferResponseType } from 'hono';
 import MarkdownIt from 'markdown-it';
 import { ref } from 'vue';
 
 import CopyButton from '@/components/CopyButton.vue';
 import Spinner from '@/components/Spinner.vue';
+import { client } from '@/lib/client';
 
 const md: MarkdownIt = new MarkdownIt();
 
-const file = ref<File | null>(null);
-const summary = ref<string>('');
+const $post = client.api.summarizePdf.$post;
+type ResponseType200 = InferResponseType<typeof $post, 200>;
+
+const file = ref<File>();
+const summaryResponse = ref<ResponseType200>();
 const isLoading = ref(false);
 const error = ref('');
 
@@ -22,25 +27,30 @@ function handleFileChange(event: Event) {
 
 async function uploadPdf(e: Event) {
   if (!file.value) return;
+  if (file.value.size > 5 * 1024 * 1024) {
+    alert('File size exceeds 5MB. Please upload a smaller file.');
+    return;
+  }
   const formData = new FormData(e.target as HTMLFormElement);
-  console.log(Object.fromEntries(formData));
 
   isLoading.value = true;
   error.value = '';
-  summary.value = '';
+  summaryResponse.value = undefined;
 
   try {
+    // Hono client doesn't support file upload yet 😢
+    // so we use fetch directly and type the json response
     const resp = await fetch('/api/summarizePdf', {
       method: 'POST',
       body: formData,
     });
-
     if (!resp.ok) {
       const text = await resp.text();
       throw new Error(text);
     }
-    const json = await resp.json();
-    summary.value = json.summary;
+    const json: ResponseType200 = await resp.json();
+    summaryResponse.value = json;
+    // TODO clear file input
   } catch (err: any) {
     error.value = err;
     console.error(err);
@@ -67,13 +77,6 @@ async function uploadPdf(e: Event) {
         name="pdf"
         required
       />
-      <label for="chunkText" class="flex items-center justify-center gap-2 text-sm">
-        <input type="checkbox" id="chunkText" name="chunkText" />
-        <span class="font-semibold">Chunk text</span>
-        <span class="block text-gray-11">
-          Splits text into chunks of 5000 characters for processing.
-        </span>
-      </label>
       <button
         type="submit"
         class="mt-4 justify-self-center rounded bg-primary-9 px-3 py-2 font-semibold text-white transition hover:bg-primary-9/90"
@@ -87,10 +90,26 @@ async function uploadPdf(e: Event) {
 
     <Spinner v-if="isLoading" role="status" />
 
-    <div v-if="summary" class="mt-4 text-left">
+    <div v-if="summaryResponse" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
       <h2 class="mb-4 text-2xl font-semibold">Summary</h2>
-      <p class="chat-message text-lg leading-relaxed" v-html="md.render(summary)" />
-      <CopyButton :summary="summary" />
+      <p class="chat-message text-lg leading-relaxed" v-html="md.render(summaryResponse.summary)" />
+
+      <table class="mt-6 text-xs">
+        <tbody>
+          <tr>
+            <th class="py-1 pr-2 font-normal">Pages Submitted</th>
+            <td class="px-2 py-1">{{ summaryResponse.metadata.totalPages }}</td>
+          </tr>
+          <tr>
+            <th class="py-1 pr-2 font-normal">Chunks Processed</th>
+            <td class="px-2 py-1">{{ summaryResponse.metadata.chunksProcessed }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <CopyButton
+        :summary="summaryResponse.summary"
+        class="absolute right-4 top-8 -translate-y-1/2"
+      />
     </div>
   </div>
 </template>

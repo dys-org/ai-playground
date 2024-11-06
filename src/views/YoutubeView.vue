@@ -3,10 +3,11 @@ import MarkdownIt from 'markdown-it';
 import { ref } from 'vue';
 
 import CopyButton from '@/components/CopyButton.vue';
-
-type Summary = { summary: string };
+import { client } from '@/lib/client';
 
 const md: MarkdownIt = new MarkdownIt();
+
+const $post = client.api.summarizeYoutube.$post;
 
 const youtubeUrl = ref('');
 const summary = ref('');
@@ -19,16 +20,14 @@ async function summarizeLecture() {
   summary.value = '';
 
   try {
-    const resp = await fetch('/api/summarizeYoutube', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: youtubeUrl.value }),
-    });
+    const resp = await $post({ json: { url: youtubeUrl.value } });
+
     if (!resp.ok) {
       const text = await resp.text();
       throw new Error(text);
     }
-    const json = (await resp.json()) as Summary;
+
+    const json = await resp.json();
     summary.value = json.summary;
   } catch (err: any) {
     error.value = err;
@@ -90,21 +89,7 @@ async function summarizeLecture() {
 
     <div v-if="summary" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
       <p class="chat-message text-lg leading-relaxed" v-html="md.render(summary)" />
-      <CopyButton :summary="summary" />
+      <CopyButton :summary="summary" class="absolute right-4 top-8 -translate-y-1/2" />
     </div>
   </div>
 </template>
-
-<style>
-.chat-message ul,
-.chat-message ol {
-  list-style: revert;
-  margin: revert;
-  padding: revert;
-  @apply mb-4 pl-4;
-}
-
-.chat-message P:not(:last-child) {
-  margin-bottom: 1rem;
-}
-</style>

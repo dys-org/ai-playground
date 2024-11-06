@@ -24,8 +24,9 @@ async function handleCopy(content: string) {
 </script>
 
 <template>
+  <!-- TODO -->
   <button
-    class="absolute right-4 top-8 -translate-y-1/2 bg-transparent p-1 text-white/60 hover:text-white"
+    class="bg-transparent p-1 text-white/60 hover:text-white"
     title="Copy Summary"
     @click="handleCopy(props.summary)"
   >
