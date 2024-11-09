@@ -3,11 +3,21 @@ import { RouterLink } from 'vue-router';
 </script>
 
 <template>
-  <header class="flex items-center justify-end gap-8 p-4">
-    <RouterLink to="/" class="text-white transition-colors hover:text-white/80">YouTube</RouterLink>
-    <RouterLink to="/pdf-summarizer" class="text-white transition-colors hover:text-white/80">
-      PDF Summarizer
+  <header class="flex h-14 items-center justify-between px-8">
+    <RouterLink to="/" class="text-white transition-colors hover:text-white/80">
+      A.I. Playground
     </RouterLink>
+    <nav class="flex items-center gap-8">
+      <RouterLink to="/youtube" class="text-white transition-colors hover:text-white/80">
+        YouTube
+      </RouterLink>
+      <RouterLink to="/pdf-summarizer" class="text-white transition-colors hover:text-white/80">
+        PDF Summarizer
+      </RouterLink>
+      <!-- <RouterLink to="/rag" class="text-white transition-colors hover:text-white/80">
+        Rag
+      </RouterLink> -->
+    </nav>
   </header>
 
   <main>
