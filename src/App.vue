@@ -27,7 +27,7 @@ import { RouterLink } from 'vue-router';
         class="text-white transition-colors hover:text-white/80"
         active-class="border-b-2 border-primary-9 -mb-0.5"
       >
-        Rag
+        RAG
       </RouterLink>
     </nav>
   </header>
