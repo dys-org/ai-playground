@@ -1,88 +1,47 @@
 <script setup lang="ts">
-import { InferResponseType } from 'hono';
 import MarkdownIt from 'markdown-it';
 import { computed, ref } from 'vue';
 
 import CopyButton from '@/components/CopyButton.vue';
 import Spinner from '@/components/Spinner.vue';
-import { client } from '@/lib/client';
+import { useQueryMutation, useUploadMutation } from '@/lib/mutations';
 
 const md = new MarkdownIt();
-
-const $uploadPost = client.api.rag.upload.$post;
-type UploadPost200 = InferResponseType<typeof $uploadPost, 200>;
-
 const question = ref('');
-const answer = ref('');
-const isUploading = ref(false);
-const isAsking = ref(false);
-const error = ref('');
-const uploadResult = ref<UploadPost200>();
 
-const shouldDisable = computed(() => isAsking.value || isUploading.value);
+const uploadMutation = useUploadMutation({
+  onSuccess: () => {
+    setTimeout(() => uploadMutation.reset(), 5000);
+  },
+});
+
+const queryMutation = useQueryMutation({
+  onSuccess: () => {
+    question.value = '';
+  },
+});
+
+const shouldDisable = computed(
+  () => uploadMutation.isPending.value || queryMutation.isPending.value,
+);
 
 async function handleFileUpload(e: Event) {
   const target = e.target as HTMLInputElement;
   if (!target.files?.length) return;
-  isUploading.value = true;
 
   const file = target.files[0];
   if (file.size > 10 * 1024 * 1024) {
     alert('File size exceeds 10MB. Please upload a smaller file.');
     return;
   }
-  const formData = new FormData();
-  formData.append('file', file);
 
-  try {
-    const resp = await fetch('/api/rag/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!resp.ok) throw new Error(await resp.text());
-
-    const result: UploadPost200 = await resp.json();
-    uploadResult.value = result;
-    setTimeout(() => {
-      uploadResult.value = undefined;
-    }, 5000);
-
-    console.log('Upload successful:', result);
-  } catch (err) {
-    if (err instanceof Error) {
-      error.value = err.message;
-    }
-    console.error(err);
-  } finally {
-    isUploading.value = false;
-    // Clear the file input
-    target.value = '';
-  }
+  uploadMutation.mutate(file);
+  target.value = '';
 }
 
 async function handleSubmit() {
   if (!question.value.trim()) return;
-
-  isAsking.value = true;
-  error.value = '';
-
-  try {
-    const resp = await client.api.rag.query.$post({ json: { question: question.value } });
-
-    if (!resp.ok) throw new Error(await resp.text());
-
-    const json = await resp.json();
-    answer.value = json.answer;
-  } catch (err) {
-    if (err instanceof Error) {
-      error.value = err.message;
-    }
-    console.error(err);
-  } finally {
-    isAsking.value = false;
-    question.value = '';
-  }
+  queryMutation.mutate(question.value);
 }
 </script>
 
@@ -107,14 +66,20 @@ async function handleSubmit() {
           class="mx-auto block w-full cursor-pointer rounded-md border border-gray-5 bg-gray-1/40 p-2 file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="shouldDisable"
         />
-        <div v-if="isUploading" class="mt-3 flex items-center gap-2 text-sm">
-          <Spinner class="size-4" />
-          Uploading...
+        <div v-if="uploadMutation.isPending.value" class="mt-3 flex items-center gap-2 text-sm">
+          <Spinner class="size-4" />Uploading...
         </div>
 
-        <!-- TODO put this in a toast -->
-        <div v-if="uploadResult" class="mt-3 flex items-center gap-2 text-sm">
-          Upload successful. {{ uploadResult?.documentsAdded }} document(s) added to the pipeline.
+        <div v-else-if="uploadMutation.isError.value" class="mb-4 text-red-500">
+          {{ uploadMutation.error.value?.message }}
+        </div>
+
+        <div
+          v-else-if="uploadMutation.isSuccess.value"
+          class="mt-3 flex items-center gap-2 text-sm"
+        >
+          Upload successful. {{ uploadMutation.data.value?.documentsAdded }} document(s) added to
+          the pipeline.
         </div>
       </div>
       <form @submit.prevent="handleSubmit" class="min-h-28">
@@ -136,18 +101,23 @@ async function handleSubmit() {
             <span class="i-lucide-send-horizontal size-5"></span>
           </button>
         </div>
-        <div v-if="isAsking" class="mt-3 flex items-center gap-2 text-sm">
+        <div v-if="queryMutation.isPending.value" class="mt-3 flex items-center gap-2 text-sm">
           <Spinner class="size-4" />
           Thinking...
         </div>
       </form>
     </div>
 
-    <div v-if="error" class="mb-4 text-red-500">{{ error }}</div>
+    <div v-if="queryMutation.isError.value" class="mb-4 text-red-500">
+      {{ queryMutation.error.value?.message }}
+    </div>
 
-    <div v-if="answer" class="relative rounded-lg bg-primary-3/60 p-6 pb-3 text-left">
-      <div class="prose" v-html="md.render(answer)"></div>
-      <CopyButton :content="answer" class="mt-4" />
+    <div
+      v-else-if="queryMutation.isSuccess.value"
+      class="relative rounded-lg bg-primary-3/60 p-6 pb-3 text-left"
+    >
+      <div class="prose" v-html="md.render(queryMutation.data.value?.answer ?? '')"></div>
+      <CopyButton :content="queryMutation.data.value?.answer ?? ''" class="mt-4" />
     </div>
   </div>
 </template>
