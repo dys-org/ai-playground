@@ -29,8 +29,10 @@ async function summarizeLecture() {
 
     const json = await resp.json();
     summary.value = json.summary;
-  } catch (err: any) {
-    error.value = err;
+  } catch (err) {
+    if (err instanceof Error) {
+      error.value = err.message;
+    }
     console.error(err);
   } finally {
     isLoading.value = false;
@@ -89,7 +91,7 @@ async function summarizeLecture() {
 
     <div v-if="summary" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
       <p class="chat-message text-lg leading-relaxed" v-html="md.render(summary)" />
-      <CopyButton :summary="summary" class="absolute right-4 top-8 -translate-y-1/2" />
+      <CopyButton :content="summary" class="absolute right-4 top-8 -translate-y-1/2" />
     </div>
   </div>
 </template>

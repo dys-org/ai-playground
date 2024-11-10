@@ -1,9 +1,5 @@
-import os from 'node:os';
-import path from 'node:path';
-
-import fs from 'fs-extra';
 import { Hono } from 'hono';
-import * as mupdf from 'mupdf';
+import { Document } from 'mupdf';
 import { OpenAI } from 'openai';
 
 const openai = new OpenAI({
@@ -17,14 +13,12 @@ export const CONFIG = {
   OVERLAP: 500,
 } as const;
 
-export async function chunkPDF(file: File, filePath: string) {
-  // Write the uploaded file to disk
-  const arrayBuffer = await file.arrayBuffer();
-  await fs.writeFile(filePath, Buffer.from(arrayBuffer));
+export async function chunkPDF(file: File) {
   // Read the file as a buffer
-  const pdfBuffer = await fs.readFile(filePath);
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfBuffer = Buffer.from(arrayBuffer);
   // Extract text from PDF using mupdf
-  const doc = mupdf.Document.openDocument(pdfBuffer, 'application/pdf');
+  const doc = Document.openDocument(pdfBuffer, 'application/pdf');
   const chunks: string[] = [];
   let currentChunk = '';
 
@@ -92,12 +86,8 @@ const pdf = new Hono().post('/', async (c) => {
     return c.text(`File size exceeds ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB limit`, 413);
   }
 
-  const tempDir = os.tmpdir();
-  const filePath = path.join(tempDir, file.name);
-
   try {
-    const { chunks, totalPages } = await chunkPDF(file, filePath);
-
+    const { chunks, totalPages } = await chunkPDF(file);
     if (chunks.length > CONFIG.MAX_CHUNKS_ALLOWED) {
       return c.text(
         `Document too large: ${chunks.length} chunks exceed maximum of ${CONFIG.MAX_CHUNKS_ALLOWED}`,
@@ -114,18 +104,13 @@ const pdf = new Hono().post('/', async (c) => {
   } catch (err) {
     console.error('Error processing PDF:', err);
     return c.text(`Failed to process PDF: ${err}`, 500);
-  } finally {
-    // Clean up the temporary file
-    await fs.remove(filePath).catch((err) => {
-      console.error('Error removing temporary file:', err);
-    });
   }
 });
 
 export default pdf;
 
 // const images = await extractImages(doc);
-async function extractImages(doc: mupdf.Document): Promise<string[]> {
+async function extractImages(doc: Document): Promise<string[]> {
   const images: string[] = [];
   for (let i = 0; i < doc.countPages(); i++) {
     const page = doc.loadPage(i);

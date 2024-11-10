@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { sleep } from '@/lib/utils';
 
 const props = defineProps<{
-  summary: string;
+  content: string;
 }>();
 
 const isCopying = ref(false);
@@ -24,11 +24,10 @@ async function handleCopy(content: string) {
 </script>
 
 <template>
-  <!-- TODO -->
   <button
     class="bg-transparent p-1 text-white/60 hover:text-white"
     title="Copy Summary"
-    @click="handleCopy(props.summary)"
+    @click="handleCopy(props.content)"
   >
     <span class="sr-only">{{ isCopying ? 'Copied' : 'Copy' }}</span>
     <span v-if="isCopying" class="i-lucide-copy-check size-5 text-green-400" aria-hidden="true" />

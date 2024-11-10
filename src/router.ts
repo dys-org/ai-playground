@@ -20,11 +20,11 @@ const router = createRouter({
       name: 'pdfSummarizer',
       component: () => import('./views/PdfSummarizerView.vue'),
     },
-    // {
-    //   path: '/rag',
-    //   name: 'rag',
-    //   component: () => import('./views/RagView.vue'),
-    // },
+    {
+      path: '/rag',
+      name: 'rag',
+      component: () => import('./views/RagView.vue'),
+    },
   ],
 });
 

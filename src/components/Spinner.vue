@@ -1,10 +1,21 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { HTMLAttributes } from 'vue';
+
+import { cn } from '@/lib/utils';
+
+const props = withDefaults(
+  defineProps<{
+    class?: HTMLAttributes['class'];
+  }>(),
+  { class: '' },
+);
+</script>
 
 <template>
   <div role="status" class="flex justify-center">
     <svg
       aria-hidden="true"
-      class="size-12 animate-spin fill-primary-9 text-gray-6"
+      :class="cn('size-12 animate-spin fill-primary-9 text-gray-6', props.class)"
       viewBox="0 0 100 101"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

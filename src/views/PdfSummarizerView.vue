@@ -44,15 +44,16 @@ async function uploadPdf(e: Event) {
       method: 'POST',
       body: formData,
     });
-    if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(text);
-    }
+
+    if (!resp.ok) throw new Error(await resp.text());
+
     const json: ResponseType200 = await resp.json();
     summaryResponse.value = json;
     // TODO clear file input
-  } catch (err: any) {
-    error.value = err;
+  } catch (err) {
+    if (err instanceof Error) {
+      error.value = err.message;
+    }
     console.error(err);
   } finally {
     isLoading.value = false;
@@ -88,7 +89,7 @@ async function uploadPdf(e: Event) {
 
     <p v-if="error" class="mb-4 text-red-500">{{ error }}</p>
 
-    <Spinner v-if="isLoading" role="status" />
+    <Spinner v-if="isLoading" />
 
     <div v-if="summaryResponse" class="relative rounded-lg bg-primary-3/60 p-6 pb-8 text-left">
       <h2 class="mb-4 text-2xl font-semibold">Summary</h2>
@@ -107,7 +108,7 @@ async function uploadPdf(e: Event) {
         </tbody>
       </table>
       <CopyButton
-        :summary="summaryResponse.summary"
+        :content="summaryResponse.summary"
         class="absolute right-4 top-8 -translate-y-1/2"
       />
     </div>
