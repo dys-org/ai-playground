@@ -43,6 +43,11 @@ async function handleFileUpload(e: Event) {
     if (!resp.ok) throw new Error(await resp.text());
 
     const result: UploadPost200 = await resp.json();
+    uploadResult.value = result;
+    setTimeout(() => {
+      uploadResult.value = undefined;
+    }, 5000);
+
     console.log('Upload successful:', result);
   } catch (err) {
     if (err instanceof Error) {
@@ -51,6 +56,8 @@ async function handleFileUpload(e: Event) {
     console.error(err);
   } finally {
     isUploading.value = false;
+    // Clear the file input
+    target.value = '';
   }
 }
 
@@ -74,6 +81,7 @@ async function handleSubmit() {
     console.error(err);
   } finally {
     isAsking.value = false;
+    question.value = '';
   }
 }
 </script>

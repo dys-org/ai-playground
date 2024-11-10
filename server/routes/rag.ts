@@ -1,9 +1,7 @@
 import { Hono } from 'hono';
 import { Document } from 'mupdf';
 
-import { VectorStore } from '../services/vectorStore';
-
-const vectorStore = VectorStore.getInstance();
+import { addDocuments, generateAnswer, query } from '../services/vectorStore';
 
 const rag = new Hono()
   .post('/upload', async (c) => {
@@ -33,7 +31,7 @@ const rag = new Hono()
         return c.text('Unsupported file type', 400);
       }
 
-      await vectorStore.addDocuments(texts);
+      await addDocuments(texts);
       return c.json({ success: true, documentsAdded: texts.length });
     } catch (err) {
       console.error(err);
@@ -46,9 +44,9 @@ const rag = new Hono()
     if (!question) return c.text('No question provided', 400);
 
     try {
-      const relevantDocs = await vectorStore.query(question);
+      const relevantDocs = await query(question);
       const context = relevantDocs.map((doc) => doc.pageContent).join('\n\n');
-      const answer = await vectorStore.generateAnswer(question, context);
+      const answer = await generateAnswer(question, context);
 
       return c.json({ answer });
     } catch (err) {
