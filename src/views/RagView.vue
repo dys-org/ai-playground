@@ -70,7 +70,7 @@ async function handleSubmit() {
           <Spinner class="size-4" />Uploading...
         </div>
 
-        <div v-else-if="uploadMutation.isError.value" class="mb-4 text-red-500">
+        <div v-else-if="uploadMutation.isError.value" class="mt-3 text-sm text-red-500">
           {{ uploadMutation.error.value?.message }}
         </div>
 
@@ -105,15 +105,14 @@ async function handleSubmit() {
           <Spinner class="size-4" />
           Thinking...
         </div>
+        <div v-else-if="queryMutation.isError.value" class="mt-3 text-sm text-red-500">
+          {{ queryMutation.error.value?.message }}
+        </div>
       </form>
     </div>
 
-    <div v-if="queryMutation.isError.value" class="mb-4 text-red-500">
-      {{ queryMutation.error.value?.message }}
-    </div>
-
     <div
-      v-else-if="queryMutation.isSuccess.value"
+      v-if="queryMutation.isSuccess.value"
       class="relative rounded-lg bg-primary-3/60 p-6 pb-3 text-left"
     >
       <div class="prose" v-html="md.render(queryMutation.data.value?.answer ?? '')"></div>
