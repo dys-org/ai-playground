@@ -1,21 +1,41 @@
+import { PGVectorStore } from '@langchain/community/vectorstores/pgvector';
 import { OpenAIEmbeddings } from '@langchain/openai';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import { OpenAI } from 'openai';
+import pg from 'pg';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
 
-function createStore() {
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+async function createStore() {
+  // Initialize pgvector extension and create table if not exists
+  await pool.query('CREATE EXTENSION IF NOT EXISTS vector');
+
   return {
-    vectorStore: new MemoryVectorStore(embeddings),
+    vectorStore: await PGVectorStore.initialize(embeddings, {
+      postgresConnectionOptions: {
+        connectionString: process.env.DATABASE_URL,
+      },
+      tableName: 'documents', // Default table name
+    }),
   };
 }
 
-let store = createStore();
+let store: { vectorStore: PGVectorStore };
 
-// For testing purposes
-export function resetStore() {
-  store = createStore();
+// Initialize store
+createStore().then((s) => {
+  store = s;
+});
+
+export async function resetStore() {
+  // Drop the table and recreate
+  await pool.query('DROP TABLE IF EXISTS documents');
+  const s = await createStore();
+  store = s;
 }
 
 export async function addDocuments(texts: string[]) {
