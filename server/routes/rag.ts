@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Document } from 'mupdf';
 
-import { addDocuments, generateAnswer, query } from '../services/vectorStore';
+import { addDocuments, generateAnswer, query } from '../services/vectorStore.js';
 
 const rag = new Hono()
   .post('/upload', async (c) => {
