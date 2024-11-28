@@ -73,16 +73,12 @@ async function uploadPdf(e: Event) {
         type="file"
         @change="handleFileChange"
         accept=".pdf"
-        class="mx-auto block w-full cursor-pointer rounded-md border border-gray-5 bg-gray-1/40 p-2 file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+        class="input mx-auto w-full cursor-pointer file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium"
         id="pdfFile"
         name="pdf"
         required
       />
-      <button
-        type="submit"
-        class="mt-4 justify-self-center rounded bg-primary-9 px-3 py-2 font-semibold text-white transition hover:bg-primary-9/90"
-        :disabled="isLoading"
-      >
+      <button type="submit" class="btn btn-primary mt-4 justify-self-center" :disabled="isLoading">
         {{ isLoading ? 'Processing...' : 'Upload and Summarize' }}
       </button>
     </form>

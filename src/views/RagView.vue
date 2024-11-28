@@ -63,7 +63,7 @@ async function handleSubmit() {
           type="file"
           @change="handleFileUpload"
           accept=".pdf,.json,.md"
-          class="mx-auto block w-full cursor-pointer rounded-md border border-gray-5 bg-gray-1/40 p-2 file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+          class="input mx-auto w-full cursor-pointer file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium"
           :disabled="shouldDisable"
         />
         <div v-if="uploadMutation.isPending.value" class="mt-3 flex items-center gap-2 text-sm">
@@ -91,12 +91,9 @@ async function handleSubmit() {
             id="askQuestion"
             v-model="question"
             type="text"
-            class="w-full rounded-l-md border border-gray-5 bg-gray-1/40 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+            class="input w-full rounded-r-none"
           />
-          <button
-            :disabled="shouldDisable"
-            class="inline-flex items-center gap-2 rounded-r-md bg-primary-9 px-4 py-2 font-semibold text-white transition-colors hover:bg-primary-9/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <button :disabled="shouldDisable" class="btn btn-primary rounded-l-none">
             <span class="sr-only">Send</span>
             <span class="i-lucide-send-horizontal size-5"></span>
           </button>

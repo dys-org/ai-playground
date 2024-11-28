@@ -42,7 +42,7 @@ async function summarizeLecture() {
 
 <template>
   <div class="mx-auto max-w-3xl p-4 pb-24 text-center">
-    <h1 class="my-8 inline-flex items-center gap-3 text-4xl font-semibold">
+    <h1 class="my-8 inline-flex items-center gap-3">
       <span class="i-logos-youtube-icon size-12" />Video Summarizer
     </h1>
 
@@ -56,15 +56,10 @@ async function summarizeLecture() {
         type="url"
         pattern="(http:|https:)?(\/\/)?(www\.)?(youtube.com|youtu.be)\/(watch|embed)?(\?v=|\/)?(\S+)?"
         required
-        class="w-2/3 rounded-l-md border border-gray-5 bg-gray-1/40 p-2 text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:cursor-not-allowed disabled:opacity-50"
+        class="input w-2/3 rounded-r-none"
       />
 
-      <button
-        :disabled="isLoading"
-        class="rounded-r-md bg-primary-9 px-3 py-2 font-semibold text-white transition-colors hover:bg-primary-9/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-9 disabled:pointer-events-none disabled:opacity-50"
-      >
-        Summarize
-      </button>
+      <button :disabled="isLoading" class="btn btn-primary rounded-l-none">Summarize</button>
     </form>
 
     <p v-if="error" class="mb-4 text-red-500">{{ error }}</p>
