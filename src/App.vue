@@ -4,8 +4,8 @@ import { RouterLink } from 'vue-router';
 
 <template>
   <header class="flex h-14 items-center justify-between px-8">
-    <RouterLink to="/" class="text-white transition-colors hover:text-white/80">
-      A.I. Playground
+    <RouterLink to="/" class="transition-opacity hover:opacity-80">
+      <img src="@/assets/img/ai.svg" alt="A.I. logo" class="h-8" />
     </RouterLink>
     <nav class="flex items-center gap-8">
       <RouterLink
