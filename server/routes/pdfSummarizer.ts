@@ -49,14 +49,28 @@ export async function chunkPDF(file: File) {
   return { chunks, totalPages: doc.countPages() };
 }
 
-export async function summarizeChunks(chunks: string[]) {
+export async function summarizeChunks(chunks: string[], imageInterpretations?: string[]) {
+  const CONTENT_SEPARATOR = '\n\n';
+
   // Summarize each chunk
   const chunkSummaries = await Promise.all(chunks.map((chunk) => summarizeSingleChunk(chunk)));
 
-  // Combine summaries if needed
-  if (chunkSummaries.length === 1) return chunkSummaries[0];
+  // If single chunk and no images, return directly
+  if (chunkSummaries.length === 1 && !imageInterpretations?.length) {
+    return chunkSummaries[0];
+  }
 
-  return summarizeSingleChunk(chunkSummaries.join(' '));
+  // Combine all content before final summarization
+  const combinedContent = [
+    chunkSummaries.join(CONTENT_SEPARATOR),
+    imageInterpretations?.length
+      ? `Visual Content: ${imageInterpretations.join(CONTENT_SEPARATOR)}`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(CONTENT_SEPARATOR);
+
+  return summarizeSingleChunk(combinedContent);
 }
 
 async function summarizeSingleChunk(text: string) {
@@ -87,7 +101,15 @@ const pdf = new Hono().post('/', async (c) => {
   }
 
   try {
-    const { chunks, totalPages } = await chunkPDF(file);
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfBuffer = Buffer.from(arrayBuffer);
+    const doc = Document.openDocument(pdfBuffer, 'application/pdf');
+
+    const [{ chunks, totalPages }, images] = await Promise.all([
+      chunkPDF(file),
+      extractImages(doc),
+    ]);
+
     if (chunks.length > CONFIG.MAX_CHUNKS_ALLOWED) {
       return c.text(
         `Document too large: ${chunks.length} chunks exceed maximum of ${CONFIG.MAX_CHUNKS_ALLOWED}`,
@@ -95,11 +117,20 @@ const pdf = new Hono().post('/', async (c) => {
       );
     }
 
-    const summary = await summarizeChunks(chunks);
+    const imageInterpretations = await Promise.all(images.map(interpretImage));
+    const summary = await summarizeChunks(chunks, imageInterpretations);
 
     return c.json({
       summary,
-      metadata: { totalPages, chunksProcessed: chunks.length },
+      images: images.map((data, index) => ({
+        data,
+        interpretation: imageInterpretations[index],
+      })),
+      metadata: {
+        totalPages,
+        chunksProcessed: chunks.length,
+        imagesExtracted: images.length,
+      },
     });
   } catch (err) {
     console.error('Error processing PDF:', err);
@@ -109,7 +140,6 @@ const pdf = new Hono().post('/', async (c) => {
 
 export default pdf;
 
-// const images = await extractImages(doc);
 async function extractImages(doc: Document): Promise<string[]> {
   const images: string[] = [];
   for (let i = 0; i < doc.countPages(); i++) {
@@ -126,7 +156,6 @@ async function extractImages(doc: Document): Promise<string[]> {
   return images;
 }
 
-// const imageInterpretations = await Promise.all(images.map(interpretImage));
 async function interpretImage(imageBase64: string): Promise<string> {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
