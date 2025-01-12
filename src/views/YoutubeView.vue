@@ -46,12 +46,12 @@ async function summarizeLecture() {
       <span class="i-logos-youtube-icon size-12" />Video Summarizer
     </h1>
 
-    <form @submit.prevent="summarizeLecture" class="mb-12 flex justify-center gap-1">
+    <form class="mb-12 flex justify-center gap-1" @submit.prevent="summarizeLecture">
       <label for="youtubeUrl" class="sr-only">YouTube URL</label>
 
       <input
-        v-model="youtubeUrl"
         id="youtubeUrl"
+        v-model="youtubeUrl"
         placeholder="Enter a YouTube URL"
         type="url"
         pattern="(http:|https:)?(\/\/)?(www\.)?(youtube.com|youtu.be)\/(watch|embed)?(\?v=|\/)?(\S+)?"

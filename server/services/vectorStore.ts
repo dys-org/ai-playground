@@ -10,44 +10,31 @@ const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-async function createStore() {
+async function createVectorStore() {
   // Initialize pgvector extension and create table if not exists
   await pool.query('CREATE EXTENSION IF NOT EXISTS vector');
 
-  return {
-    vectorStore: await PGVectorStore.initialize(embeddings, {
-      postgresConnectionOptions: {
-        connectionString: process.env.DATABASE_URL,
-      },
-      tableName: 'documents', // Default table name
-    }),
-  };
+  return PGVectorStore.initialize(embeddings, {
+    postgresConnectionOptions: {
+      connectionString: process.env.DATABASE_URL,
+    },
+    tableName: 'documents', // Default table name
+  });
 }
-
-let store: { vectorStore: PGVectorStore };
 
 // Initialize store
-createStore().then((s) => {
-  store = s;
-});
-
-export async function resetStore() {
-  // Drop the table and recreate
-  await pool.query('DROP TABLE IF EXISTS documents');
-  const s = await createStore();
-  store = s;
-}
+const vectorStore = await createVectorStore();
 
 export async function addDocuments(texts: string[]) {
   const docs = texts.map((text) => ({
     pageContent: text,
     metadata: { source: 'uploaded-document' },
   }));
-  await store.vectorStore.addDocuments(docs);
+  await vectorStore.addDocuments(docs);
 }
 
 export async function query(question: string) {
-  return store.vectorStore.similaritySearch(question, 4);
+  return vectorStore.similaritySearch(question, 4);
 }
 
 export async function generateAnswer(question: string, context: string) {

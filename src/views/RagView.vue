@@ -61,10 +61,10 @@ async function handleSubmit() {
         <input
           id="fileUpload"
           type="file"
-          @change="handleFileUpload"
           accept=".pdf,.json,.md"
           class="input mx-auto w-full cursor-pointer file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium"
           :disabled="shouldDisable"
+          @change="handleFileUpload"
         />
         <div v-if="uploadMutation.isPending.value" class="mt-3 flex items-center gap-2 text-sm">
           <Spinner class="size-4" />Uploading...
@@ -82,7 +82,7 @@ async function handleSubmit() {
           the pipeline.
         </div>
       </div>
-      <form @submit.prevent="handleSubmit" class="min-h-28">
+      <form class="min-h-28" @submit.prevent="handleSubmit">
         <label for="askQuestion" class="mb-2 block text-sm font-semibold">
           Ask a question about your documents
         </label>

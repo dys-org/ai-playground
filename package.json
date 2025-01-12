@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "pnpm@9.12.3",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "vite",
     "build:client": "vite build",
@@ -11,14 +11,15 @@
     "build:server": "npx tsc --project tsconfig.server.json",
     "preview": "vite preview",
     "start": "concurrently \"pnpm run server\" \"pnpm run dev\"",
-    "build": "pnpm build:client && pnpm build:server"
+    "build": "pnpm build:client && pnpm build:server",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@langchain/community": "^0.3.16",
     "@langchain/openai": "^0.3.14",
     "@tanstack/vue-query": "^5.61.5",
-    "@types/node": "^20.17.9",
+    "@types/node": "^22.10.2",
     "@types/pg": "^8.11.10",
     "@vueuse/core": "^12.0.0",
     "clsx": "^2.1.1",

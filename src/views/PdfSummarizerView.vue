@@ -67,16 +67,16 @@ async function uploadPdf(e: Event) {
       <span class="i-lucide-file size-10" />
       PDF Summarizer
     </h1>
-    <form @submit.prevent="uploadPdf" class="mx-auto mb-8 grid max-w-lg gap-4">
+    <form class="mx-auto mb-8 grid max-w-lg gap-4" @submit.prevent="uploadPdf">
       <label class="sr-only" for="pdfFile">PDF File</label>
       <input
+        id="pdfFile"
         type="file"
-        @change="handleFileChange"
         accept=".pdf"
         class="input mx-auto w-full cursor-pointer file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium"
-        id="pdfFile"
         name="pdf"
         required
+        @change="handleFileChange"
       />
       <button type="submit" class="btn btn-primary mt-4 justify-self-center" :disabled="isLoading">
         {{ isLoading ? 'Processing...' : 'Upload and Summarize' }}

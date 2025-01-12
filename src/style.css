@@ -40,24 +40,6 @@ the hex values as variables didn't work with the tailwind opacity modifier for B
   --neutral-surface: 0 0% 100% / 0.8;
   --neutral-indicator: 0 0% 55%;
   --neutral-track: 0 0% 55%;
-
-  /* --gray-1: 210 33% 99%;
-  --gray-2: 220 33% 98%;
-  --gray-3: 220 33% 95%;
-  --gray-4: 220 25% 92%;
-  --gray-5: 220 25% 89%;
-  --gray-6: 220 20% 86%;
-  --gray-7: 220 20% 82%;
-  --gray-8: 220 17% 75%;
-  --gray-9: 220 11% 57%;
-  --gray-10: 220 10% 53%;
-  --gray-11: 220 9% 41%;
-  --gray-12: 220 20% 14%;
-
-  --gray-contrast: 0 0% 100%;
-  --gray-surface: 0 0% 100% / 0.8;
-  --gray-indicator: 220 11% 57%;
-  --gray-track: 220 11% 57%; */
 }
 
 .dark {
@@ -96,24 +78,6 @@ the hex values as variables didn't work with the tailwind opacity modifier for B
   --neutral-surface: 0 0% 0% / 0.05;
   --neutral-indicator: 0 0% 43%;
   --neutral-track: 0 0% 43%;
-
-  /* --gray-1: 220 25% 3%;
-  --gray-2: 220 11% 9%;
-  --gray-3: 220 10% 14%;
-  --gray-4: 220 9% 17%;
-  --gray-5: 220 11% 20%;
-  --gray-6: 220 11% 24%;
-  --gray-7: 220 11% 29%;
-  --gray-8: 220 10% 39%;
-  --gray-9: 220 9% 45%;
-  --gray-10: 220 9% 50%;
-  --gray-11: 220 11% 69%;
-  --gray-12: 220 14% 94%;
-
-  --gray-contrast: 0 0% 100%;
-  --gray-surface: 0 0% 0% / 0.05;
-  --gray-indicator: 220 9% 45%;
-  --gray-track: 220 9% 45%; */
 }
 
 @tailwind base;
