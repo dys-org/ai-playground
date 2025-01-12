@@ -1,7 +1,8 @@
+import { createOpenAI } from '@ai-sdk/openai';
+import { type LanguageModel, generateText } from 'ai';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { Hono } from 'hono';
-import OpenAI from 'openai';
 import { Innertube } from 'youtubei.js';
 
 const systemMessage = `
@@ -25,7 +26,7 @@ Adjust the summary length based on the video duration:
 These are guidelines, not strict rules. Adjust the length as needed to capture all essential information while maintaining conciseness. If the video content is particularly dense or complex, you may need to exceed these ranges slightly.
 `;
 
-const openai = new OpenAI({
+const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
@@ -72,25 +73,14 @@ const youtube = new Hono().post('/', async (c) => {
       .join(' ');
     // return c.json({ summary: fullText });
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: systemMessage,
-        },
-        {
-          role: 'user',
-          content: fullText,
-        },
-      ],
-      max_tokens: 1024,
+    const { text } = await generateText({
+      model: openai('gpt-4o'),
+      prompt: fullText,
+      system: systemMessage,
+      maxTokens: 1024,
       temperature: 0.2,
     });
-
-    const summary = response.choices[0].message.content ?? '';
-
-    return c.json({ summary });
+    return c.json({ summary: text });
   } catch (err: any) {
     console.error(err);
     return c.text(err || 'Failed to summarize the video', 500);
