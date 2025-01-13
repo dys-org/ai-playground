@@ -26,9 +26,7 @@ Adjust the summary length based on the video duration:
 These are guidelines, not strict rules. Adjust the length as needed to capture all essential information while maintaining conciseness. If the video content is particularly dense or complex, you may need to exceed these ranges slightly.
 `;
 
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 dayjs.extend(duration);
 

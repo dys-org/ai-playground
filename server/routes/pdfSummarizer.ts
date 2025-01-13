@@ -3,9 +3,7 @@ import { generateText } from 'ai';
 import { Hono } from 'hono';
 import { Document } from 'mupdf';
 
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const CONFIG = {
   MAX_FILE_SIZE: 5 * 1024 * 1024,
