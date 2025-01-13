@@ -134,7 +134,7 @@ const pdf = new Hono().post('/', async (c) => {
 
 export default pdf;
 
-async function extractImages(doc: Document): Promise<string[]> {
+async function extractImages(doc: Document) {
   const images: string[] = [];
   for (let i = 0; i < doc.countPages(); i++) {
     const page = doc.loadPage(i);
@@ -150,7 +150,7 @@ async function extractImages(doc: Document): Promise<string[]> {
   return images;
 }
 
-async function interpretImage(imageBase64: string): Promise<string> {
+async function interpretImage(imageBase64: string) {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
     messages: [

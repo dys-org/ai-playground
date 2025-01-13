@@ -1,9 +1,12 @@
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
+import { zValidator } from '@hono/zod-validator';
 import { generateText } from 'ai';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { Hono } from 'hono';
 import { Innertube } from 'youtubei.js';
+import { z } from 'zod';
 
 const systemMessage = `
 You will be provided with a YouTube video transcript. Your task is to create a concise, informative summary that captures the key points, main ideas, and essential information. Follow these guidelines:
@@ -27,6 +30,7 @@ These are guidelines, not strict rules. Adjust the length as needed to capture a
 `;
 
 const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 dayjs.extend(duration);
 
@@ -43,46 +47,62 @@ function extractVideoId(url: string) {
   return videoId?.length === 11 ? videoId : null;
 }
 
-const youtube = new Hono().post('/', async (c) => {
-  const { url } = await c.req.json();
+const modelEnum = z.enum(['claude-3-5-sonnet-latest', 'gpt-4o', 'gpt-4o-mini']);
+export type ModelEnum = z.infer<typeof modelEnum>;
 
-  try {
-    // Extract video ID from URL
-    const videoId = extractVideoId(url);
-    if (!videoId) return c.text('Invalid YouTube URL', 400);
-
-    const yt = await Innertube.create({
-      lang: 'en',
-      location: 'US',
-      retrieve_player: false,
-    });
-    const video = await yt.getInfo(videoId ?? '');
-    const transcriptData = await video.getTranscript();
-
-    if (!transcriptData?.transcript?.content?.body?.initial_segments) {
-      return c.text('No transcript available for this video', 422);
-    }
-
-    const segments = transcriptData.transcript.content.body.initial_segments;
-
-    // text with formatted timestamps
-    const fullText = segments
-      .map((segment) => `[${formatMilliseconds(segment.start_ms)}] ${segment.snippet.text}`)
-      .join(' ');
-    // return c.json({ summary: fullText });
-
-    const { text } = await generateText({
-      model: openai('gpt-4o-mini'),
-      prompt: fullText,
-      system: systemMessage,
-      maxTokens: 1024,
-      temperature: 0.2,
-    });
-    return c.json({ summary: text });
-  } catch (err: any) {
-    console.error(err);
-    return c.text(err || 'Failed to summarize the video', 500);
-  }
+const youtubeSchema = z.object({
+  url: z.string().url('Invalid URL format').includes('youtu'),
+  model: modelEnum,
 });
+
+const youtube = new Hono().post(
+  '/',
+  zValidator('json', youtubeSchema, (result, c) => {
+    if (!result.success) {
+      return c.text('Invalid!', 400);
+    }
+  }),
+  async (c) => {
+    const { url, model } = c.req.valid('json');
+
+    try {
+      // Extract video ID from URL
+      const videoId = extractVideoId(url);
+      if (!videoId) return c.text('Invalid YouTube URL', 400);
+
+      const yt = await Innertube.create({
+        lang: 'en',
+        location: 'US',
+        retrieve_player: false,
+      });
+      const video = await yt.getInfo(videoId);
+      const transcriptData = await video.getTranscript();
+
+      if (!transcriptData?.transcript?.content?.body?.initial_segments) {
+        return c.text('No transcript available for this video', 422);
+      }
+
+      const segments = transcriptData.transcript.content.body.initial_segments;
+
+      // text with formatted timestamps
+      const fullText = segments
+        .map((segment) => `[${formatMilliseconds(segment.start_ms)}] ${segment.snippet.text}`)
+        .join(' ');
+      // return c.json({ summary: fullText });
+
+      const { text } = await generateText({
+        model: model === 'claude-3-5-sonnet-latest' ? anthropic(model) : openai(model),
+        prompt: fullText,
+        system: systemMessage,
+        maxTokens: 1024,
+        temperature: 0.2,
+      });
+      return c.json({ summary: text });
+    } catch (err: any) {
+      console.error(err);
+      return c.text(err || 'Failed to summarize the video', 500);
+    }
+  },
+);
 
 export default youtube;

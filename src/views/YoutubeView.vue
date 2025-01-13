@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useStorage } from '@vueuse/core';
 import MarkdownIt from 'markdown-it';
+import { ModelEnum } from 'server/routes/youtube';
 import { ref } from 'vue';
 
 import CopyButton from '@/components/CopyButton.vue';
@@ -8,6 +10,8 @@ import { client } from '@/lib/client';
 const md: MarkdownIt = new MarkdownIt();
 
 const $post = client.api.summarizeYoutube.$post;
+
+const aiModel = useStorage('ai-model', 'gpt-4o-mini');
 
 const youtubeUrl = ref('');
 const summary = ref('');
@@ -20,7 +24,9 @@ async function summarizeLecture() {
   summary.value = '';
 
   try {
-    const resp = await $post({ json: { url: youtubeUrl.value } });
+    const resp = await $post({
+      json: { url: youtubeUrl.value, model: aiModel.value as ModelEnum },
+    });
 
     if (!resp.ok) {
       const text = await resp.text();
