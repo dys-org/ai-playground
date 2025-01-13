@@ -1,5 +1,5 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { type LanguageModel, generateText } from 'ai';
+import { generateText } from 'ai';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { Hono } from 'hono';
@@ -74,7 +74,7 @@ const youtube = new Hono().post('/', async (c) => {
     // return c.json({ summary: fullText });
 
     const { text } = await generateText({
-      model: openai('gpt-4o'),
+      model: openai('gpt-4o-mini'),
       prompt: fullText,
       system: systemMessage,
       maxTokens: 1024,

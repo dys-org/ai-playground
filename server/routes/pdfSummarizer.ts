@@ -1,8 +1,9 @@
+import { createOpenAI } from '@ai-sdk/openai';
+import { generateText } from 'ai';
 import { Hono } from 'hono';
 import { Document } from 'mupdf';
-import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
+const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
@@ -74,20 +75,15 @@ export async function summarizeChunks(chunks: string[], imageInterpretations?: s
 }
 
 async function summarizeSingleChunk(text: string) {
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content: 'Summarize the following text concisely while retaining key information.',
-      },
-      { role: 'user', content: text },
-    ],
-    max_tokens: 1024,
+  const { text: summary } = await generateText({
+    model: openai('gpt-4o-mini'),
+    prompt: text,
+    system: 'Summarize the following text concisely while retaining key information.',
+    maxTokens: 1024,
     temperature: 0.2,
   });
 
-  return completion.choices[0].message.content ?? '';
+  return summary;
 }
 
 const pdf = new Hono().post('/', async (c) => {
@@ -157,8 +153,8 @@ async function extractImages(doc: Document): Promise<string[]> {
 }
 
 async function interpretImage(imageBase64: string): Promise<string> {
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const { text } = await generateText({
+    model: openai('gpt-4o-mini'),
     messages: [
       {
         role: 'user',
@@ -167,10 +163,12 @@ async function interpretImage(imageBase64: string): Promise<string> {
             type: 'text',
             text: 'Describe this image in detail, focusing on its content and any text visible in it.',
           },
-          { type: 'image_url', image_url: { url: imageBase64 } },
+          { type: 'image', image: imageBase64 },
         ],
       },
     ],
+    maxTokens: 1024,
+    temperature: 0.2,
   });
-  return response.choices[0].message.content || '';
+  return text;
 }
