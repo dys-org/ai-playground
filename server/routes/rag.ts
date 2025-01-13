@@ -1,7 +1,15 @@
+import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { Document } from 'mupdf';
+import { z } from 'zod';
 
+import { modelEnum } from '../../lib/types.js';
 import { addDocuments, generateAnswer, query } from '../services/vectorStore.js';
+
+const ragQuerySchema = z.object({
+  question: z.string(),
+  model: modelEnum,
+});
 
 const rag = new Hono()
   .post('/upload', async (c) => {
@@ -38,21 +46,29 @@ const rag = new Hono()
       return c.text('Error processing file', 500);
     }
   })
-  .post('/query', async (c) => {
-    const { question } = await c.req.json();
+  .post(
+    '/query',
+    zValidator('json', ragQuerySchema, (result, c) => {
+      if (!result.success) {
+        return c.text('Invalid!', 400);
+      }
+    }),
+    async (c) => {
+      const { question } = c.req.valid('json');
 
-    if (!question) return c.text('No question provided', 400);
+      if (!question) return c.text('No question provided', 400);
 
-    try {
-      const relevantDocs = await query(question);
-      const context = relevantDocs.map((doc) => doc.pageContent).join('\n\n');
-      const answer = await generateAnswer(question, context);
+      try {
+        const relevantDocs = await query(question);
+        const context = relevantDocs.map((doc) => doc.pageContent).join('\n\n');
+        const answer = await generateAnswer(question, context);
 
-      return c.json({ answer });
-    } catch (err) {
-      console.error(err);
-      return c.text('Error processing query', 500);
-    }
-  });
+        return c.json({ answer });
+      } catch (err) {
+        console.error(err);
+        return c.text('Error processing query', 500);
+      }
+    },
+  );
 
 export default rag;

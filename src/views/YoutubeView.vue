@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core';
 import MarkdownIt from 'markdown-it';
-import { ModelEnum } from 'server/routes/youtube';
 import { ref } from 'vue';
 
 import CopyButton from '@/components/CopyButton.vue';
 import { client } from '@/lib/client';
+
+import { ModelEnum } from '../../lib/types.js';
 
 const md: MarkdownIt = new MarkdownIt();
 

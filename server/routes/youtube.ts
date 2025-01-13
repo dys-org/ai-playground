@@ -8,6 +8,8 @@ import { Hono } from 'hono';
 import { Innertube } from 'youtubei.js';
 import { z } from 'zod';
 
+import { modelEnum } from '../../lib/types';
+
 const systemMessage = `
 You will be provided with a YouTube video transcript. Your task is to create a concise, informative summary that captures the key points, main ideas, and essential information. Follow these guidelines:
 
@@ -46,9 +48,6 @@ function extractVideoId(url: string) {
   const videoId = url.split('v=')[1]?.split(/[?#&]/)[0];
   return videoId?.length === 11 ? videoId : null;
 }
-
-const modelEnum = z.enum(['claude-3-5-sonnet-latest', 'gpt-4o', 'gpt-4o-mini']);
-export type ModelEnum = z.infer<typeof modelEnum>;
 
 const youtubeSchema = z.object({
   url: z.string().url('Invalid URL format').includes('youtu'),
