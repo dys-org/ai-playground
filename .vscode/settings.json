@@ -4,5 +4,12 @@
     "titleBar.activeBackground": "#74270D",
     "titleBar.activeForeground": "#FEFBFA"
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "tsconfig.json": "tsconfig.*.json, env.d.ts",
+    "vite.config.*": "jsconfig*, vitest.config.*, playwright.config.*, tailwind.config.*",
+    "package.json": "package-lock.json, pnpm*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, mise.toml, .gitignore",
+    "Dockerfile": "docker-compose.yml, .dockerignore"
+  }
 }

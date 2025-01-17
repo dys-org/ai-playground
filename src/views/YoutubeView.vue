@@ -6,13 +6,14 @@ import { ref } from 'vue';
 import CopyButton from '@/components/CopyButton.vue';
 import { client } from '@/lib/client';
 
-import { ModelEnum } from '../../lib/types.js';
+import { DEFAULT_AI_MODEL } from '../../lib/constants';
+import { AiModelType } from '../../lib/types';
 
 const md: MarkdownIt = new MarkdownIt();
 
 const $post = client.api.summarizeYoutube.$post;
 
-const aiModel = useStorage('ai-model', 'gpt-4o-mini');
+const aiModel = useStorage('ai-model', DEFAULT_AI_MODEL);
 
 const youtubeUrl = ref('');
 const summary = ref('');
@@ -26,7 +27,7 @@ async function summarizeLecture() {
 
   try {
     const resp = await $post({
-      json: { url: youtubeUrl.value, model: aiModel.value as ModelEnum },
+      json: { url: youtubeUrl.value, model: aiModel.value as AiModelType },
     });
 
     if (!resp.ok) {

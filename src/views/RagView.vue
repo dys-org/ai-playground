@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useStorage } from '@vueuse/core';
 import MarkdownIt from 'markdown-it';
 import { computed, ref } from 'vue';
 
@@ -6,8 +7,13 @@ import CopyButton from '@/components/CopyButton.vue';
 import Spinner from '@/components/Spinner.vue';
 import { useQueryMutation, useUploadMutation } from '@/lib/mutations';
 
+import { DEFAULT_AI_MODEL } from '../../lib/constants';
+import { AiModelType } from '../../lib/types';
+
 const md = new MarkdownIt();
 const question = ref('');
+
+const aiModel = useStorage('ai-model', DEFAULT_AI_MODEL);
 
 const uploadMutation = useUploadMutation({
   onSuccess: () => {
@@ -41,7 +47,7 @@ async function handleFileUpload(e: Event) {
 
 async function handleSubmit() {
   if (!question.value.trim()) return;
-  queryMutation.mutate(question.value);
+  queryMutation.mutate({ question: question.value, model: aiModel.value as AiModelType });
 }
 </script>
 

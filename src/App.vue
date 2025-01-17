@@ -2,7 +2,9 @@
 import { useStorage } from '@vueuse/core';
 import { RouterLink } from 'vue-router';
 
-const aiModel = useStorage('ai-model', 'gpt-4o-mini');
+import { DEFAULT_AI_MODEL } from '../lib/constants';
+
+const aiModel = useStorage('ai-model', DEFAULT_AI_MODEL);
 </script>
 
 <template>

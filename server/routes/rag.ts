@@ -11,52 +11,67 @@ const ragQuerySchema = z.object({
   model: modelEnum,
 });
 
+const ragUploadSchema = z.object({
+  file: z
+    .instanceof(File)
+    .refine(
+      (file) => ['application/pdf', 'application/json', 'text/markdown'].includes(file.type),
+      'Only .pdf, .json, and .md formats are supported',
+    ),
+});
+
 const rag = new Hono()
-  .post('/upload', async (c) => {
-    const formData = await c.req.formData();
-    const file = formData.get('file') as File;
-
-    if (!file) return c.text('No file uploaded', 400);
-
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      let texts: string[] = [];
-
-      if (file.type === 'application/pdf') {
-        const doc = Document.openDocument(buffer, 'application/pdf');
-        for (let i = 0; i < doc.countPages(); i++) {
-          const page = doc.loadPage(i);
-          const text = page.toStructuredText().asText();
-          texts.push(text);
-        }
-      } else if (file.type === 'application/json') {
-        const json = JSON.parse(buffer.toString());
-        texts = Array.isArray(json) ? json : [JSON.stringify(json)];
-      } else if (file.type === 'text/markdown') {
-        texts = [buffer.toString()];
-      } else {
-        return c.text('Unsupported file type', 400);
+  .post(
+    '/upload',
+    zValidator('form', ragUploadSchema, (result, c) => {
+      if (!result.success) {
+        console.log(result.error);
+        return c.text(result.error.issues[0].message, 400);
       }
+    }),
+    async (c) => {
+      const formData = await c.req.formData();
+      const file = formData.get('file') as File;
 
-      await addDocuments(texts);
-      return c.json({ success: true, documentsAdded: texts.length });
-    } catch (err) {
-      console.error(err);
-      return c.text('Error processing file', 500);
-    }
-  })
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        let texts: string[] = [];
+
+        if (file.type === 'application/pdf') {
+          const doc = Document.openDocument(buffer, 'application/pdf');
+          for (let i = 0; i < doc.countPages(); i++) {
+            const page = doc.loadPage(i);
+            const text = page.toStructuredText().asText();
+            texts.push(text);
+          }
+        }
+        if (file.type === 'application/json') {
+          const json = JSON.parse(buffer.toString());
+          texts = Array.isArray(json) ? json : [JSON.stringify(json)];
+        }
+        if (file.type === 'text/markdown') {
+          texts = [buffer.toString()];
+        }
+
+        await addDocuments(texts);
+        return c.json({ success: true, documentsAdded: texts.length });
+      } catch (err) {
+        console.error(err);
+        return c.text('Error processing file', 500);
+      }
+    },
+  )
   .post(
     '/query',
     zValidator('json', ragQuerySchema, (result, c) => {
       if (!result.success) {
-        return c.text('Invalid!', 400);
+        console.log(result.error);
+        return c.text(result.error.issues[0].message, 400);
       }
     }),
     async (c) => {
       const { question } = c.req.valid('json');
-
-      if (!question) return c.text('No question provided', 400);
 
       try {
         const relevantDocs = await query(question);
