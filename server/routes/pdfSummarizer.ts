@@ -1,7 +1,9 @@
 import { createOpenAI } from '@ai-sdk/openai';
+import { zValidator } from '@hono/zod-validator';
 import { generateText } from 'ai';
 import { Hono } from 'hono';
 import { Document } from 'mupdf';
+import { z } from 'zod';
 
 const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -84,53 +86,63 @@ async function summarizeSingleChunk(text: string) {
   return summary;
 }
 
-const pdf = new Hono().post('/', async (c) => {
-  const formData = await c.req.formData();
-  const file = formData.get('pdf') as File | null;
-
-  if (!file) return c.text('No file uploaded', 400);
-
-  if (file.size > CONFIG.MAX_FILE_SIZE) {
-    return c.text(`File size exceeds ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB limit`, 413);
-  }
-
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfBuffer = Buffer.from(arrayBuffer);
-    const doc = Document.openDocument(pdfBuffer, 'application/pdf');
-
-    const [{ chunks, totalPages }, images] = await Promise.all([
-      chunkPDF(file),
-      extractImages(doc),
-    ]);
-
-    if (chunks.length > CONFIG.MAX_CHUNKS_ALLOWED) {
-      return c.text(
-        `Document too large: ${chunks.length} chunks exceed maximum of ${CONFIG.MAX_CHUNKS_ALLOWED}`,
-        413,
-      );
-    }
-
-    const imageInterpretations = await Promise.all(images.map(interpretImage));
-    const summary = await summarizeChunks(chunks, imageInterpretations);
-
-    return c.json({
-      summary,
-      images: images.map((data, index) => ({
-        data,
-        interpretation: imageInterpretations[index],
-      })),
-      metadata: {
-        totalPages,
-        chunksProcessed: chunks.length,
-        imagesExtracted: images.length,
-      },
-    });
-  } catch (err) {
-    console.error('Error processing PDF:', err);
-    return c.text(`Failed to process PDF: ${err}`, 500);
-  }
+const pdfUploadSchema = z.object({
+  pdf: z
+    .instanceof(File)
+    .refine((file) => file.size !== 0 || file.size <= CONFIG.MAX_FILE_SIZE, 'Max file size is 5MB.')
+    .refine((file) => file.type === 'application/pdf', 'Only .pdf files are supported'),
 });
+
+const pdf = new Hono().post(
+  '/',
+  zValidator('form', pdfUploadSchema, (result, c) => {
+    if (!result.success) {
+      console.log(result.error);
+      return c.text(result.error.issues[0].message, 400);
+    }
+  }),
+  async (c) => {
+    const formData = await c.req.formData();
+    const file = formData.get('pdf') as File;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfBuffer = Buffer.from(arrayBuffer);
+      const doc = Document.openDocument(pdfBuffer, 'application/pdf');
+
+      const [{ chunks, totalPages }, images] = await Promise.all([
+        chunkPDF(file),
+        extractImages(doc),
+      ]);
+
+      if (chunks.length > CONFIG.MAX_CHUNKS_ALLOWED) {
+        return c.text(
+          `Document too large: ${chunks.length} chunks exceed maximum of ${CONFIG.MAX_CHUNKS_ALLOWED}`,
+          413,
+        );
+      }
+
+      const imageInterpretations = await Promise.all(images.map(interpretImage));
+      const summary = await summarizeChunks(chunks, imageInterpretations);
+
+      return c.json({
+        summary,
+        images: images.map((data, index) => ({
+          data,
+          interpretation: imageInterpretations[index],
+        })),
+        metadata: {
+          totalPages,
+          chunksProcessed: chunks.length,
+          imagesExtracted: images.length,
+        },
+      });
+    } catch (err) {
+      console.error('Error processing PDF:', err);
+      return c.text(`Failed to process PDF: ${err}`, 500);
+    }
+  },
+);
 
 export default pdf;
 
